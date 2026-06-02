@@ -52,3 +52,28 @@ pnpm run dev
 ```
 
 DevTools の Network タブで Preserve log を有効にし、アプリ読み込み後にシークレットを生成してください。新しい通信が発生しないこと、browser storage に生成値が保存されないことを確認できます。
+
+## 配布 ZIP の作成
+
+配布先に渡す ZIP には、アプリが動作する最低限の生成物として `dist/` の中身だけを含めます。`src/`、`node_modules/`、テスト、ドキュメント、スクリーンショット、`package.json`、`pnpm-lock.yaml` は実行には不要です。
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run build
+
+cd dist
+zip -r -X ../secret-generator-dist.zip . -x "*.DS_Store" "__MACOSX/*"
+```
+
+ZIP の中身は次のようになります。
+
+```text
+index.html
+_headers
+assets/index-*.css
+assets/index-*.js
+```
+
+`_headers` は Cloudflare Pages など対応している配布先でセキュリティヘッダーとして利用されます。対応していない静的サーバーでは通常のファイルとして置かれるだけなので、配布先の仕様に合わせて扱ってください。
+
+このアプリは SPA のため、`/generator/random-password` のような直接アクセスや再読み込みに対応するには、配布先で存在しないパスを `index.html` に返す fallback 設定が必要です。

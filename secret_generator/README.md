@@ -55,6 +55,31 @@ pnpm run dev
 
 Open DevTools, keep the Network tab open with Preserve log enabled, generate a secret, and confirm no post-load network request is sent. Check browser storage areas and confirm the generated value is not stored.
 
+## Build a distribution ZIP
+
+The ZIP handed to a static hosting provider should contain only the generated files from `dist/`. The source files, `node_modules`, tests, docs, screenshots, `package.json`, and `pnpm-lock.yaml` are not required at runtime.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run build
+
+cd dist
+zip -r -X ../secret-generator-dist.zip . -x "*.DS_Store" "__MACOSX/*"
+```
+
+The ZIP should contain files like:
+
+```text
+index.html
+_headers
+assets/index-*.css
+assets/index-*.js
+```
+
+`_headers` is used by compatible hosts such as Cloudflare Pages for security headers. On unsupported static servers it is just a regular file, so handle it according to the host's deployment rules.
+
+This app is an SPA. To support direct visits or refreshes on URLs such as `/generator/random-password`, configure the hosting provider to fall back to `index.html` for unknown paths.
+
 ## Development
 
 ```sh
